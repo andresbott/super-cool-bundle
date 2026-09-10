@@ -1,0 +1,46 @@
+name: Release
+on:
+  push:
+    tags:
+      # Bare semver tags (matches the README / JitPack convention), created via `make tag version="1.2.3"`.
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: write
+
+env:
+  # Applied to every mvn invocation, including those run via `make`.
+  MAVEN_ARGS: "-B -ntp"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # pom.xml sets <maven.compiler.release>21</maven.compiler.release>, so the
+      # build needs a JDK 21 compiler.
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Stamp the artifact version from the pushed tag so the released jar is
+      # super-cool-bundle-<tag>.jar (JitPack does this itself per tag).
+      - name: Set version from tag
+        run: mvn versions:set -DnewVersion=${{ github.ref_name }} -DgenerateBackupPoms=false
+
+      - name: Build bundle
+        run: make package
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: target/super-cool-bundle-*.jar
+          generate_release_notes: true

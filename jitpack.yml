@@ -1,4 +1,5 @@
 # JitPack build configuration.
-# bnd 7.3 (used to embed SnakeYAML) requires JDK 17+.
+# pom.xml targets <maven.compiler.release>21</maven.compiler.release>, so the
+# JitPack build needs JDK 21 (bnd 7.3 needs 17+; 21 satisfies both).
 jdk:
-  - openjdk17
+  - openjdk21

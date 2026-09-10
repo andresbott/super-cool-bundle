@@ -23,7 +23,7 @@ mvn clean package
 
 Push a git **tag** (e.g. `1.0.0`) to GitHub. JitPack builds it on demand from the
 tag — no publishing, no signing, and **no token for a public repo**.
-[`jitpack.yml`](jitpack.yml) pins JDK 17 (bnd 7.3 requires it).
+[`jitpack.yml`](jitpack.yml) pins JDK 21 (matches the pom's `release` target; bnd 7.3 needs 17+).
 
 In the consumer `pom.xml`:
 
