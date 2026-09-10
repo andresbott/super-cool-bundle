@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Standalone, deliberately-vulnerable OSGi bundle (security-scan demo for
+         adaptTo() 2026). Depends on and embeds org.yaml:snakeyaml:1.30
+         (CVE-2022-1471) so that any consumer inherits a vulnerable *transitive*
+         dependency. Designed to be published from a git tag and built by JitPack
+         (or any Maven build). NOT for production use. -->
+    <groupId>com.github.andresbott</groupId>
+    <artifactId>super-cool-bundle</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>super-cool-bundle (security-scan demo)</name>
+    <description>
+        Demo-only OSGi bundle that carries a known-vulnerable transitive
+        dependency (org.yaml:snakeyaml:1.30, CVE-2022-1471), embedded as a nested
+        lib, to exercise transitive-dependency detection in SBOM / security
+        scanning. NOT for production use.
+    </description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+        <bnd.version>7.3.0</bnd.version>
+        <snakeyaml.version>1.30</snakeyaml.version>
+    </properties>
+
+    <dependencies>
+        <!-- Known-vulnerable transitive dependency: SnakeYAML 1.30 (CVE-2022-1471,
+             unsafe deserialization). Declared 'compile' so consumers inherit it
+             transitively, AND embedded into this bundle (see bnd -includeresource
+             below) so it is present in the deployed bytes for byte-level SBOM
+             scanners too. -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+            </plugin>
+            <!-- Turn this jar into an OSGi bundle and embed SnakeYAML as a nested
+                 lib (Bundle-ClassPath: .,snakeyaml-1.30.jar). -->
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>${bnd.version}</version>
+                <executions>
+                    <execution>
+                        <id>bnd-process</id>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                        <configuration>
+                            <bnd><![CDATA[
+Bundle-SymbolicName: com.github.andresbott.super-cool-bundle
+Import-Package: !org.yaml.snakeyaml.*,*
+-includeresource: snakeyaml-1.30.jar;lib:=true
+                            ]]></bnd>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

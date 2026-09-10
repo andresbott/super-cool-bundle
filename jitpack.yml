@@ -1,0 +1,4 @@
+# JitPack build configuration.
+# bnd 7.3 (used to embed SnakeYAML) requires JDK 17+.
+jdk:
+  - openjdk17
