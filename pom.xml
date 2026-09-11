@@ -4,37 +4,37 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Standalone, deliberately-vulnerable OSGi bundle (security-scan demo for
-         adaptTo() 2026). Depends on and embeds org.yaml:snakeyaml:1.30
-         (CVE-2022-1471) so that any consumer inherits a vulnerable *transitive*
-         dependency. Designed to be published from a git tag and built by JitPack
-         (or any Maven build). NOT for production use. -->
+    <!-- Standalone OSGi bundle (security-scan demo for adaptTo() 2026). This is
+         the *remediated* counterpart to the vulnerable 1.0.0 release: it now
+         depends on and embeds org.yaml:snakeyaml:2.4, which fixes CVE-2022-1471,
+         so consumers inherit a non-vulnerable *transitive* dependency and an SBOM
+         / security scan comes back clean. Designed to be published from a git tag
+         and built by JitPack (or any Maven build). NOT for production use. -->
     <groupId>com.github.andresbott</groupId>
     <artifactId>super-cool-bundle</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>super-cool-bundle (security-scan demo)</name>
     <description>
-        Demo-only OSGi bundle that carries a known-vulnerable transitive
-        dependency (org.yaml:snakeyaml:1.30, CVE-2022-1471), embedded as a nested
-        lib, to exercise transitive-dependency detection in SBOM / security
-        scanning. NOT for production use.
+        Demo-only OSGi bundle that carries a non-vulnerable transitive
+        dependency (org.yaml:snakeyaml:2.4, which fixes CVE-2022-1471), embedded
+        as a nested lib, to demonstrate the remediated ("after") state in SBOM /
+        security scanning. NOT for production use.
     </description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <bnd.version>7.3.0</bnd.version>
-        <snakeyaml.version>1.30</snakeyaml.version>
+        <snakeyaml.version>2.4</snakeyaml.version>
     </properties>
 
     <dependencies>
-        <!-- Known-vulnerable transitive dependency: SnakeYAML 1.30 (CVE-2022-1471,
-             unsafe deserialization). Declared 'compile' so consumers inherit it
-             transitively, AND embedded into this bundle (see bnd -includeresource
-             below) so it is present in the deployed bytes for byte-level SBOM
-             scanners too. -->
+        <!-- Fixed transitive dependency: SnakeYAML 2.4 (CVE-2022-1471 resolved in
+             2.0+). Declared 'compile' so consumers inherit it transitively, AND
+             embedded into this bundle (see bnd -includeresource below) so it is
+             present in the deployed bytes for byte-level SBOM scanners too. -->
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
@@ -51,7 +51,7 @@
                 <version>3.13.0</version>
             </plugin>
             <!-- Turn this jar into an OSGi bundle and embed SnakeYAML as a nested
-                 lib (Bundle-ClassPath: .,snakeyaml-1.30.jar). -->
+                 lib (Bundle-ClassPath: .,snakeyaml-2.4.jar). -->
             <plugin>
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-maven-plugin</artifactId>
@@ -66,7 +66,7 @@
                             <bnd><![CDATA[
 Bundle-SymbolicName: com.github.andresbott.super-cool-bundle
 Import-Package: !org.yaml.snakeyaml.*,*
--includeresource: snakeyaml-1.30.jar;lib:=true
+-includeresource: snakeyaml-2.4.jar;lib:=true
                             ]]></bnd>
                         </configuration>
                     </execution>
